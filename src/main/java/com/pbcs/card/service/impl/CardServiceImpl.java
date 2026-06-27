@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pbcs.card.dto.request.CreateCardRequest;
+import com.pbcs.card.dto.request.ReloadCardRequest;
 import com.pbcs.card.dto.response.CardResponse;
 import com.pbcs.card.entity.Card;
 import com.pbcs.card.enums.CardStatus;
@@ -163,4 +164,21 @@ public class CardServiceImpl implements CardService {
 
         return cardMapper.toResponse(updatedCard);
     }
+
+    
+	@Override
+	@Transactional
+	public CardResponse reloadCard(Long id, ReloadCardRequest request) 
+	{
+		Card card = cardRepository.findById(id).orElseThrow(()->new CardNotFoundException("Card not found with id :"+id));
+		if(card.getStatus()!=CardStatus.ACTIVE)
+		{
+			throw new IllegalStateException("Only active card scan be loaded");
+		}
+		card.setBalance(card.getBalance().add(request.getAmount()));
+		Card updatedCard = cardRepository.save(card);
+		
+		return cardMapper.toResponse(updatedCard);
+		
+	}
 }

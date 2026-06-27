@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pbcs.card.dto.request.CreateCardRequest;
+import com.pbcs.card.dto.request.ReloadCardRequest;
 import com.pbcs.card.dto.response.CardResponse;
 import com.pbcs.card.service.CardService;
 
@@ -64,6 +65,12 @@ public class CardController
 	@PatchMapping("/{id}/unblock")
 	public CardResponse unblockCard(@PathVariable Long id) {
 	    return cardService.unblockCard(id);
+	}
+	
+	@PostMapping("/{id}/reload")
+	public CardResponse reloadCard(@PathVariable Long id,@Valid @RequestBody ReloadCardRequest request) {
+
+	    return cardService.reloadCard(id, request);
 	}
 
 }

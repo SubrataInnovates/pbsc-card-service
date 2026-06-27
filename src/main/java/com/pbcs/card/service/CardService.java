@@ -5,6 +5,7 @@ import java.util.List;
 
 
 import com.pbcs.card.dto.request.CreateCardRequest;
+import com.pbcs.card.dto.request.ReloadCardRequest;
 import com.pbcs.card.dto.response.CardResponse;
 
 
@@ -23,5 +24,6 @@ public interface CardService
 	    CardResponse blockCard(Long id);
 	    
 	    CardResponse unblockCard(Long id);
+	    CardResponse reloadCard(Long id, ReloadCardRequest request);
 
 }
