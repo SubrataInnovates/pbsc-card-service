@@ -39,6 +39,7 @@ public class CardServiceImpl implements CardService
 		return cardMapper.toResponse(savedCard);
 	}
 
+	@Transactional(readOnly = true)
 	@Override
 	public CardResponse getCardById(Long id) 
 	{
@@ -47,10 +48,11 @@ public class CardServiceImpl implements CardService
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<CardResponse> getAllCards()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return cardRepository.findAll().stream().map(cardMapper::toResponse).toList();
+		
 	}
 
 	@Override
