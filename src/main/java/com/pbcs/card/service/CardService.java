@@ -21,5 +21,7 @@ public interface CardService
 	    CardResponse activateCard(Long id);
 	    
 	    CardResponse blockCard(Long id);
+	    
+	    CardResponse unblockCard(Long id);
 
 }

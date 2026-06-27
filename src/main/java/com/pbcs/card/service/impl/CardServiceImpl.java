@@ -132,4 +132,35 @@ public class CardServiceImpl implements CardService {
 
         return cardMapper.toResponse(updatedCard);
     }
+
+    @Override
+    @Transactional
+    public CardResponse unblockCard(Long id) {
+
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() ->
+                        new CardNotFoundException("Card not found with id: " + id));
+
+        if (card.getStatus() == CardStatus.ACTIVE) {
+            return cardMapper.toResponse(card);
+        }
+
+        if (card.getStatus() == CardStatus.CREATED) {
+            throw new IllegalStateException("Card must be activated before it can be unblocked.");
+        }
+
+        if (card.getStatus() == CardStatus.CLOSED) {
+            throw new IllegalStateException("Closed card cannot be unblocked.");
+        }
+
+        if (card.getStatus() != CardStatus.BLOCKED) {
+            throw new IllegalStateException("Only blocked cards can be unblocked.");
+        }
+
+        card.setStatus(CardStatus.ACTIVE);
+
+        Card updatedCard = cardRepository.save(card);
+
+        return cardMapper.toResponse(updatedCard);
+    }
 }
