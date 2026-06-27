@@ -48,6 +48,8 @@ public class Card extends BaseEntity
 	@Column(name="status",nullable = false)
 	private CardStatus status;
 	
+	
+	
 
 	
 	
