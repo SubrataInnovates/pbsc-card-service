@@ -105,4 +105,31 @@ public class CardServiceImpl implements CardService {
 
         return cardMapper.toResponse(updatedCard);
     }
+
+    @Override
+    @Transactional
+    public CardResponse blockCard(Long id) {
+
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() ->
+                        new CardNotFoundException("Card not found with id: " + id));
+
+        if (card.getStatus() == CardStatus.BLOCKED) {
+            return cardMapper.toResponse(card);
+        }
+
+        if (card.getStatus() == CardStatus.CREATED) {
+            throw new IllegalStateException("Card must be activated before it can be blocked.");
+        }
+
+        if (card.getStatus() == CardStatus.CLOSED) {
+            throw new IllegalStateException("Closed card cannot be blocked.");
+        }
+
+        card.setStatus(CardStatus.BLOCKED);
+
+        Card updatedCard = cardRepository.save(card);
+
+        return cardMapper.toResponse(updatedCard);
+    }
 }

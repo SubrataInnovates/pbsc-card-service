@@ -56,5 +56,10 @@ public class CardController
 	public CardResponse activateCard(@PathVariable Long id) {
 	    return cardService.activateCard(id);
 	}
+	
+	@PatchMapping("/{id}/block")
+	public CardResponse blockCard(@PathVariable Long id) {
+	    return cardService.blockCard(id);
+	}
 
 }

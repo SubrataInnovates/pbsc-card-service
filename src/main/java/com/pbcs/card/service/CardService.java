@@ -19,5 +19,7 @@ public interface CardService
 	    void deleteCard(Long id);
 	    
 	    CardResponse activateCard(Long id);
+	    
+	    CardResponse blockCard(Long id);
 
 }
