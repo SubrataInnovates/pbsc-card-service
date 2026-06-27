@@ -1,8 +1,8 @@
 package com.pbcs.card.enums;
 
-public enum CardStatus 
-{
-	CREATED,
+public enum CardStatus {
+
+    CREATED,
     ACTIVE,
     BLOCKED,
     EXPIRED,

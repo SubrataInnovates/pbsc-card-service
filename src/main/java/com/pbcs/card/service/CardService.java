@@ -17,5 +17,7 @@ public interface CardService
 	    List<CardResponse> getAllCards();
 
 	    void deleteCard(Long id);
+	    
+	    CardResponse activateCard(Long id);
 
 }

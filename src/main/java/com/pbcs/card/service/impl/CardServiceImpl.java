@@ -34,7 +34,7 @@ public class CardServiceImpl implements CardService {
         card.setCardNumber(generateUniqueCardNumber());
         card.setCvv(generateCvv());
         card.setBalance(request.getInitialBalance());
-        card.setStatus(CardStatus.ACTIVE);
+        card.setStatus(CardStatus.CREATED);
 
         Card savedCard = cardRepository.save(card);
 
@@ -85,5 +85,24 @@ public class CardServiceImpl implements CardService {
 
     private String generateCvv() {
         return CvvGenerator.generate();
+    }
+    
+    @Override
+    @Transactional
+    public CardResponse activateCard(Long id) {
+
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() ->
+                        new CardNotFoundException("Card not found with id: " + id));
+
+        if (card.getStatus() == CardStatus.ACTIVE) {
+            return cardMapper.toResponse(card);
+        }
+
+        card.setStatus(CardStatus.ACTIVE);
+
+        Card updatedCard = cardRepository.save(card);
+
+        return cardMapper.toResponse(updatedCard);
     }
 }
