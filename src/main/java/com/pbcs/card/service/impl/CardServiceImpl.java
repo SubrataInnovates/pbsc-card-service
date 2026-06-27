@@ -8,6 +8,7 @@ import com.pbcs.card.dto.request.CreateCardRequest;
 import com.pbcs.card.dto.response.CardResponse;
 import com.pbcs.card.entity.Card;
 import com.pbcs.card.enums.CardStatus;
+import com.pbcs.card.exception.CardNotFoundException;
 import com.pbcs.card.mapper.CardMapper;
 import com.pbcs.card.repository.CardRepository;
 import com.pbcs.card.service.CardService;
@@ -41,8 +42,8 @@ public class CardServiceImpl implements CardService
 	@Override
 	public CardResponse getCardById(Long id) 
 	{
-		// TODO Auto-generated method stub
-		return null;
+		Card card = cardRepository.findById(id).orElseThrow(()->new CardNotFoundException("Card Not Found with id: "+id));
+		return cardMapper.toResponse(card);
 	}
 
 	@Override
