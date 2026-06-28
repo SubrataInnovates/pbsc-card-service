@@ -72,5 +72,9 @@ public class CardController
 
 	    return cardService.reloadCard(id, request);
 	}
+	@PatchMapping("/{id}/close")
+	public CardResponse closeCard(@PathVariable Long id) {
+	    return cardService.closeCard(id);
+	}
 
 }

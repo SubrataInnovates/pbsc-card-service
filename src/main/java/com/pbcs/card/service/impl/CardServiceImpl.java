@@ -173,12 +173,35 @@ public class CardServiceImpl implements CardService {
 		Card card = cardRepository.findById(id).orElseThrow(()->new CardNotFoundException("Card not found with id :"+id));
 		if(card.getStatus()!=CardStatus.ACTIVE)
 		{
-			throw new IllegalStateException("Only active card scan be loaded");
+			throw new IllegalStateException("Only active cards can be loaded");
 		}
 		card.setBalance(card.getBalance().add(request.getAmount()));
 		Card updatedCard = cardRepository.save(card);
 		
 		return cardMapper.toResponse(updatedCard);
 		
+	}
+
+	@Override
+	@Transactional
+	public CardResponse closeCard(Long id) {
+
+	    Card card = cardRepository.findById(id)
+	            .orElseThrow(() ->
+	                    new CardNotFoundException("Card not found with id: " + id));
+
+	    if (card.getStatus() == CardStatus.CLOSED) {
+	        throw new IllegalStateException("Card is already closed.");
+	    }
+
+	    if (card.getStatus() == CardStatus.EXPIRED) {
+	        throw new IllegalStateException("Expired card cannot be closed.");
+	    }
+
+	    card.setStatus(CardStatus.CLOSED);
+
+	    Card updatedCard = cardRepository.save(card);
+
+	    return cardMapper.toResponse(updatedCard);
 	}
 }

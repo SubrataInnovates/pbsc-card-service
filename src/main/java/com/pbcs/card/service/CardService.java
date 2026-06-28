@@ -25,5 +25,6 @@ public interface CardService
 	    
 	    CardResponse unblockCard(Long id);
 	    CardResponse reloadCard(Long id, ReloadCardRequest request);
+	    CardResponse closeCard(Long id);
 
 }
