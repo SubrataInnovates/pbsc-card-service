@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.pbcs.card.dto.request.CreateCardRequest;
 import com.pbcs.card.dto.request.ReloadCardRequest;
 import com.pbcs.card.dto.response.CardResponse;
+import com.pbcs.card.dto.response.CardStatementResponse;
 import com.pbcs.card.service.CardService;
 
 import jakarta.validation.Valid;
@@ -75,6 +76,10 @@ public class CardController
 	@PatchMapping("/{id}/close")
 	public CardResponse closeCard(@PathVariable Long id) {
 	    return cardService.closeCard(id);
+	}
+	@GetMapping("/{id}/statement")
+	public CardStatementResponse getCardStatement(@PathVariable Long id) {
+	    return cardService.getCardStatement(id);
 	}
 
 }

@@ -8,11 +8,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.pbcs.card.dto.request.CreateCardRequest;
 import com.pbcs.card.dto.request.ReloadCardRequest;
 import com.pbcs.card.dto.response.CardResponse;
+import com.pbcs.card.dto.response.CardStatementResponse;
+import com.pbcs.card.dto.response.TransactionResponse;
 import com.pbcs.card.entity.Card;
 import com.pbcs.card.enums.CardStatus;
 import com.pbcs.card.exception.CardNotFoundException;
 import com.pbcs.card.mapper.CardMapper;
+import com.pbcs.card.mapper.TransactionMapper;
 import com.pbcs.card.repository.CardRepository;
+import com.pbcs.card.repository.TransactionRepository;
 import com.pbcs.card.service.CardService;
 import com.pbcs.card.util.CardNumberGenerator;
 import com.pbcs.card.util.CvvGenerator;
@@ -25,7 +29,10 @@ import lombok.RequiredArgsConstructor;
 public class CardServiceImpl implements CardService {
 
     private final CardRepository cardRepository;
+    private final TransactionRepository transactionRepository;
+
     private final CardMapper cardMapper;
+    private final TransactionMapper transactionMapper;
 
     @Override
     public CardResponse createCard(CreateCardRequest request) {
@@ -73,21 +80,6 @@ public class CardServiceImpl implements CardService {
         cardRepository.delete(card);
     }
 
-    private String generateUniqueCardNumber() {
-
-        String cardNumber;
-
-        do {
-            cardNumber = CardNumberGenerator.generate();
-        } while (cardRepository.existsByCardNumber(cardNumber));
-
-        return cardNumber;
-    }
-
-    private String generateCvv() {
-        return CvvGenerator.generate();
-    }
-    
     @Override
     @Transactional
     public CardResponse activateCard(Long id) {
@@ -102,9 +94,7 @@ public class CardServiceImpl implements CardService {
 
         card.setStatus(CardStatus.ACTIVE);
 
-        Card updatedCard = cardRepository.save(card);
-
-        return cardMapper.toResponse(updatedCard);
+        return cardMapper.toResponse(cardRepository.save(card));
     }
 
     @Override
@@ -129,9 +119,7 @@ public class CardServiceImpl implements CardService {
 
         card.setStatus(CardStatus.BLOCKED);
 
-        Card updatedCard = cardRepository.save(card);
-
-        return cardMapper.toResponse(updatedCard);
+        return cardMapper.toResponse(cardRepository.save(card));
     }
 
     @Override
@@ -160,48 +148,84 @@ public class CardServiceImpl implements CardService {
 
         card.setStatus(CardStatus.ACTIVE);
 
-        Card updatedCard = cardRepository.save(card);
-
-        return cardMapper.toResponse(updatedCard);
+        return cardMapper.toResponse(cardRepository.save(card));
     }
 
-    
-	@Override
-	@Transactional
-	public CardResponse reloadCard(Long id, ReloadCardRequest request) 
-	{
-		Card card = cardRepository.findById(id).orElseThrow(()->new CardNotFoundException("Card not found with id :"+id));
-		if(card.getStatus()!=CardStatus.ACTIVE)
-		{
-			throw new IllegalStateException("Only active cards can be loaded");
-		}
-		card.setBalance(card.getBalance().add(request.getAmount()));
-		Card updatedCard = cardRepository.save(card);
-		
-		return cardMapper.toResponse(updatedCard);
-		
-	}
+    @Override
+    @Transactional
+    public CardResponse reloadCard(Long id, ReloadCardRequest request) {
 
-	@Override
-	@Transactional
-	public CardResponse closeCard(Long id) {
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() ->
+                        new CardNotFoundException("Card not found with id: " + id));
 
-	    Card card = cardRepository.findById(id)
-	            .orElseThrow(() ->
-	                    new CardNotFoundException("Card not found with id: " + id));
+        if (card.getStatus() != CardStatus.ACTIVE) {
+            throw new IllegalStateException("Only active cards can be loaded.");
+        }
 
-	    if (card.getStatus() == CardStatus.CLOSED) {
-	        throw new IllegalStateException("Card is already closed.");
-	    }
+        card.setBalance(card.getBalance().add(request.getAmount()));
 
-	    if (card.getStatus() == CardStatus.EXPIRED) {
-	        throw new IllegalStateException("Expired card cannot be closed.");
-	    }
+        return cardMapper.toResponse(cardRepository.save(card));
+    }
 
-	    card.setStatus(CardStatus.CLOSED);
+    @Override
+    @Transactional
+    public CardResponse closeCard(Long id) {
 
-	    Card updatedCard = cardRepository.save(card);
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() ->
+                        new CardNotFoundException("Card not found with id: " + id));
 
-	    return cardMapper.toResponse(updatedCard);
-	}
+        if (card.getStatus() == CardStatus.CLOSED) {
+            throw new IllegalStateException("Card is already closed.");
+        }
+
+        if (card.getStatus() == CardStatus.EXPIRED) {
+            throw new IllegalStateException("Expired card cannot be closed.");
+        }
+
+        card.setStatus(CardStatus.CLOSED);
+
+        return cardMapper.toResponse(cardRepository.save(card));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CardStatementResponse getCardStatement(Long id) {
+
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() ->
+                        new CardNotFoundException("Card not found with id: " + id));
+
+        List<TransactionResponse> transactions = transactionRepository
+                .findByCardId(id)
+                .stream()
+                .map(transactionMapper::toResponse)
+                .toList();
+
+        return CardStatementResponse.builder()
+                .cardId(card.getId())
+                .cardNumber(card.getCardNumber())
+                .cardHolderName(card.getCardHolderName())
+                .balance(card.getBalance())
+                .currency(card.getCurrency())
+                .status(card.getStatus())
+                .transactions(transactions)
+                .build();
+    }
+
+    private String generateUniqueCardNumber() {
+
+        String cardNumber;
+
+        do {
+            cardNumber = CardNumberGenerator.generate();
+        } while (cardRepository.existsByCardNumber(cardNumber));
+
+        return cardNumber;
+    }
+
+    private String generateCvv() {
+        return CvvGenerator.generate();
+    }
 }
